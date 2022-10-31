@@ -81,6 +81,7 @@ type SOA struct {
 }
 
 // getSOA function to resolve SOA record from domain
+// TODO: Do I want all of this, or only the serial to compare?
 func getSOA(domain string, nameserver string) (*SOA, error) {
 	answer := new(SOA)
 	m := new(dns.Msg)
@@ -105,7 +106,7 @@ func getSOA(domain string, nameserver string) (*SOA, error) {
 	return answer, nil
 }
 
-// getSOA function to resolve SOA record from domain
+// getSerial function to resolve SOA record from domain
 func getSerial(domain string, nameserver string) (uint32, error) {
 	var answer uint32
 	m := new(dns.Msg)
