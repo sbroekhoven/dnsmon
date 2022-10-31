@@ -59,16 +59,17 @@ func main() {
 	// Loop domains from config file
 	for _, d := range conf.Domains {
 		fmt.Println(d.Name)
-		soa, err := getSOA(d.Name, conf.Nameserver)
+		domainSerial, err := getSerial(d.Name, conf.Nameserver)
 		if err != nil {
 			println(err)
 		}
-		println(soa.Serial)
+		println(domainSerial)
 	}
 
 }
 
 // SOA struct for SOA information aquired from the nameserver.
+// TODO: Do I want all of this, or only the serial to compare?
 type SOA struct {
 	Ns      string `json:"ns,omitempty"`
 	Mbox    string `json:"mbox,omitempty"`
@@ -99,6 +100,25 @@ func getSOA(domain string, nameserver string) (*SOA, error) {
 			answer.Minttl = soa.Minttl   // uint32
 			answer.Refresh = soa.Refresh // uint32
 			answer.Retry = soa.Retry     // uint32
+		}
+	}
+	return answer, nil
+}
+
+// getSOA function to resolve SOA record from domain
+func getSerial(domain string, nameserver string) (uint32, error) {
+	var answer uint32
+	m := new(dns.Msg)
+	m.SetQuestion(dns.Fqdn(domain), dns.TypeSOA)
+	c := new(dns.Client)
+	m.MsgHdr.RecursionDesired = true
+	in, _, err := c.Exchange(m, nameserver+":53")
+	if err != nil {
+		return answer, err
+	}
+	for _, ain := range in.Answer {
+		if soa, ok := ain.(*dns.SOA); ok {
+			answer = soa.Serial
 		}
 	}
 	return answer, nil
