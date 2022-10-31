@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/miekg/dns"
 )
@@ -59,51 +60,30 @@ func main() {
 	// Loop domains from config file
 	for _, d := range conf.Domains {
 		fmt.Println(d.Name)
+
+		// Get the serial number of the zone file
 		domainSerial, err := getSerial(d.Name, conf.Nameserver)
 		if err != nil {
-			println(err)
+			println(err.Error())
 		}
 		println(domainSerial)
-	}
 
-}
-
-// SOA struct for SOA information aquired from the nameserver.
-// TODO: Do I want all of this, or only the serial to compare?
-type SOA struct {
-	Ns      string `json:"ns,omitempty"`
-	Mbox    string `json:"mbox,omitempty"`
-	Serial  uint32 `json:"serial,omitempty"`
-	Refresh uint32 `json:"refresh,omitempty"`
-	Retry   uint32 `json:"retry,omitempty"`
-	Expire  uint32 `json:"expire,omitempty"`
-	Minttl  uint32 `json:"minttl,omitempty"`
-}
-
-// getSOA function to resolve SOA record from domain
-// TODO: Do I want all of this, or only the serial to compare?
-func getSOA(domain string, nameserver string) (*SOA, error) {
-	answer := new(SOA)
-	m := new(dns.Msg)
-	m.SetQuestion(dns.Fqdn(domain), dns.TypeSOA)
-	c := new(dns.Client)
-	m.MsgHdr.RecursionDesired = true
-	in, _, err := c.Exchange(m, nameserver+":53")
-	if err != nil {
-		return answer, err
-	}
-	for _, ain := range in.Answer {
-		if soa, ok := ain.(*dns.SOA); ok {
-			answer.Serial = soa.Serial   // uint32
-			answer.Ns = soa.Ns           // string
-			answer.Expire = soa.Expire   // uint32
-			answer.Mbox = soa.Mbox       // string
-			answer.Minttl = soa.Minttl   // uint32
-			answer.Refresh = soa.Refresh // uint32
-			answer.Retry = soa.Retry     // uint32
+		// Get the nameservers for the domains
+		domainNameservers, err := getNameservers(d.Name, conf.Nameserver)
+		if err != nil {
+			println(err.Error())
 		}
+		fmt.Printf("%v\n", domainNameservers)
+
+		// Get the mailservers for the domain
+		domainMailservers, err := getMailservers(d.Name, conf.Nameserver)
+		if err != nil {
+			println(err.Error())
+		}
+		fmt.Printf("%v\n", domainMailservers)
+
 	}
-	return answer, nil
+
 }
 
 // getSerial function to resolve SOA record from domain
@@ -120,6 +100,43 @@ func getSerial(domain string, nameserver string) (uint32, error) {
 	for _, ain := range in.Answer {
 		if soa, ok := ain.(*dns.SOA); ok {
 			answer = soa.Serial
+		}
+	}
+	return answer, nil
+}
+
+func getNameservers(domain string, nameserver string) ([]string, error) {
+	var answer []string
+	m := new(dns.Msg)
+	m.SetQuestion(dns.Fqdn(domain), dns.TypeNS)
+	m.MsgHdr.RecursionDesired = true
+	m.SetEdns0(4096, true)
+	c := new(dns.Client)
+	in, _, err := c.Exchange(m, nameserver+":53")
+	if err != nil {
+		return answer, err
+	}
+	for _, ain := range in.Answer {
+		if a, ok := ain.(*dns.NS); ok {
+			answer = append(answer, strings.ToLower(a.Ns))
+		}
+	}
+	return answer, nil
+}
+
+func getMailservers(domain string, nameserver string) ([]string, error) {
+	var answer []string
+	m := new(dns.Msg)
+	m.SetQuestion(dns.Fqdn(domain), dns.TypeMX)
+	m.MsgHdr.RecursionDesired = true
+	c := new(dns.Client)
+	in, _, err := c.Exchange(m, nameserver+":53")
+	if err != nil {
+		return answer, err
+	}
+	for _, ain := range in.Answer {
+		if a, ok := ain.(*dns.MX); ok {
+			answer = append(answer, a.Mx)
 		}
 	}
 	return answer, nil
