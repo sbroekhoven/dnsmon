@@ -1,6 +1,7 @@
 package checks
 
 import (
+	"sort"
 	"strings"
 
 	"github.com/miekg/dns"
@@ -22,5 +23,7 @@ func GetNameservers(domain string, nameserver string) ([]string, error) {
 			answer = append(answer, strings.ToLower(a.Ns))
 		}
 	}
+	// Need to sort data to be able to compare
+	sort.Strings(answer)
 	return answer, nil
 }

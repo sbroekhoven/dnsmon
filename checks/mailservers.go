@@ -1,6 +1,10 @@
 package checks
 
-import "github.com/miekg/dns"
+import (
+	"sort"
+
+	"github.com/miekg/dns"
+)
 
 func GetMailservers(domain string, nameserver string) ([]string, error) {
 	var answer []string
@@ -17,5 +21,7 @@ func GetMailservers(domain string, nameserver string) ([]string, error) {
 			answer = append(answer, a.Mx)
 		}
 	}
+	// Need to sort data to be able to compare
+	sort.Strings(answer)
 	return answer, nil
 }

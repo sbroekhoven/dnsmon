@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"reflect"
 
 	"dnsmon/checks"
 	"dnsmon/config"
@@ -36,6 +37,18 @@ func main() {
 
 	// Loop domains from config file
 	for _, d := range conf.Domains {
+		// Open stored domain data from json file
+		storedData, err := cruncher.ReadJSON(d.Name + ".last.json")
+		if err != nil {
+			println(err.Error())
+		}
+		jsonStored, err := json.MarshalIndent(storedData, "", "   ")
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+		fmt.Printf("%s\n", jsonStored)
+
 		data := new(cruncher.Domain)
 		data.Domainname = d.Name
 
@@ -82,6 +95,14 @@ func main() {
 			panic(err)
 		}
 		fmt.Printf("wrote %d bytes\n", n)
+
+		// compare the stuff
+		var resolvedData cruncher.Domain = *data
+		if reflect.DeepEqual(storedData, resolvedData) {
+			fmt.Println("storedData is equal to resolvedData")
+		} else {
+			fmt.Println("storedData is not equal to resolvedData")
+		}
 	}
 
 }
