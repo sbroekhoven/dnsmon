@@ -5,36 +5,13 @@ import (
 	"flag"
 	"fmt"
 	"os"
-	"strings"
 
-	"github.com/miekg/dns"
+	"dnsmon/checks"
+	"dnsmon/config"
+	"dnsmon/cruncher"
 )
 
-// Load configuration file and parse the json content
-func LoadConfiguration(file string) (Config, error) {
-	var config Config
-	configFile, err := os.Open(file)
-	if err != nil {
-		return config, err
-	}
-	defer configFile.Close()
-	jsonParser := json.NewDecoder(configFile)
-	jsonParser.Decode(&config)
-	return config, err
-}
-
-// Config struct for use in the applications with some general values
-type Config struct {
-	Contact    string         `json:"contact"`
-	Nameserver string         `json:"nameserver"`
-	Domains    []ConfigDomain `json:"domains"`
-}
-
-// ConfigDomain struct for domains to monitor.
-type ConfigDomain struct {
-	Name string `json:"name"`
-}
-
+// This is the main function
 func main() {
 	// Define the flag for the application for opening a config file.
 	configFile := flag.String("config", "config.json", "What config file to use. (Required)")
@@ -45,7 +22,7 @@ func main() {
 	}
 
 	// Read config or create an error
-	conf, err := LoadConfiguration(*configFile)
+	conf, err := config.LoadConfiguration(*configFile)
 	if err != nil {
 		println(err.Error())
 		os.Exit(1)
@@ -59,85 +36,52 @@ func main() {
 
 	// Loop domains from config file
 	for _, d := range conf.Domains {
-		fmt.Println(d.Name)
+		data := new(cruncher.Domain)
+		data.Domainname = d.Name
 
 		// Get the serial number of the zone file
-		domainSerial, err := getSerial(d.Name, conf.Nameserver)
+		domainSerial, err := checks.GetSerial(d.Name, conf.Nameserver)
 		if err != nil {
 			println(err.Error())
 		}
-		println(domainSerial)
+		data.Serial = domainSerial
 
 		// Get the nameservers for the domains
-		domainNameservers, err := getNameservers(d.Name, conf.Nameserver)
+		domainNameservers, err := checks.GetNameservers(d.Name, conf.Nameserver)
 		if err != nil {
 			println(err.Error())
 		}
-		fmt.Printf("%v\n", domainNameservers)
+		data.Nameservers = domainNameservers
 
 		// Get the mailservers for the domain
-		domainMailservers, err := getMailservers(d.Name, conf.Nameserver)
+		domainMailservers, err := checks.GetMailservers(d.Name, conf.Nameserver)
 		if err != nil {
 			println(err.Error())
 		}
-		fmt.Printf("%v\n", domainMailservers)
+		data.Mailservers = domainMailservers
 
-	}
-
-}
-
-// getSerial function to resolve SOA record from domain
-func getSerial(domain string, nameserver string) (uint32, error) {
-	var answer uint32
-	m := new(dns.Msg)
-	m.SetQuestion(dns.Fqdn(domain), dns.TypeSOA)
-	c := new(dns.Client)
-	m.MsgHdr.RecursionDesired = true
-	in, _, err := c.Exchange(m, nameserver+":53")
-	if err != nil {
-		return answer, err
-	}
-	for _, ain := range in.Answer {
-		if soa, ok := ain.(*dns.SOA); ok {
-			answer = soa.Serial
+		json, err := json.MarshalIndent(data, "", "   ")
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
 		}
-	}
-	return answer, nil
-}
+		fmt.Printf("%s\n", json)
 
-func getNameservers(domain string, nameserver string) ([]string, error) {
-	var answer []string
-	m := new(dns.Msg)
-	m.SetQuestion(dns.Fqdn(domain), dns.TypeNS)
-	m.MsgHdr.RecursionDesired = true
-	m.SetEdns0(4096, true)
-	c := new(dns.Client)
-	in, _, err := c.Exchange(m, nameserver+":53")
-	if err != nil {
-		return answer, err
-	}
-	for _, ain := range in.Answer {
-		if a, ok := ain.(*dns.NS); ok {
-			answer = append(answer, strings.ToLower(a.Ns))
-		}
-	}
-	return answer, nil
-}
+		// Store the json to file
+		// prepare filename
+		filename := data.Domainname + ".last.json"
 
-func getMailservers(domain string, nameserver string) ([]string, error) {
-	var answer []string
-	m := new(dns.Msg)
-	m.SetQuestion(dns.Fqdn(domain), dns.TypeMX)
-	m.MsgHdr.RecursionDesired = true
-	c := new(dns.Client)
-	in, _, err := c.Exchange(m, nameserver+":53")
-	if err != nil {
-		return answer, err
-	}
-	for _, ain := range in.Answer {
-		if a, ok := ain.(*dns.MX); ok {
-			answer = append(answer, a.Mx)
+		f, err := os.OpenFile(filename, os.O_CREATE, 0600)
+		if err != nil {
+			panic(err)
 		}
+		defer f.Close()
+
+		n, err := f.Write(json)
+		if err != nil {
+			panic(err)
+		}
+		fmt.Printf("wrote %d bytes\n", n)
 	}
-	return answer, nil
+
 }
