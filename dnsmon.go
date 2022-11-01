@@ -105,5 +105,12 @@ func main() {
 		} else {
 			domainLogger.Info("storedData is not equal to resolvedData")
 		}
+
+		// Own compare functionallity
+		eq, err := cruncher.Compare(storedData, resolvedData)
+		if err != nil {
+			domainLogger.Error(err.Error())
+		}
+		log.Println(eq)
 	}
 }
