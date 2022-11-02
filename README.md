@@ -8,3 +8,34 @@ To start with, I only want to look for changes in:
 * MX records for mailserver changes
 * NS records to see if the nameserver has changed
 
+## Run thit tool
+
+Issue the following command to run this tool.
+
+```bash
+dnsmon -config config.json
+```
+
+## The configuration
+
+Here is an example configuration to use.
+
+```json
+{
+    "contact": "somebody",
+    "output": "output/",
+    "resolver1": "8.8.8.8",
+    "resolver2": "1.1.1.1",
+    "domains": [
+        {
+            "name": "example.com"
+        },
+        {
+            "name": "voorbeeld.nl"
+        },
+        {
+            "name": "example.xyz"
+        }
+    ]
+}
+```
