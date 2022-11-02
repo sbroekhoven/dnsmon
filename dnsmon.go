@@ -57,6 +57,7 @@ func main() {
 			// Error collecting information regarding this domain
 			// Contintue with the next domain
 			log.Println(err.Error())
+			log.Println("start trying second resolver now")
 			data, err = cruncher.Collect(d, conf.Resolver1)
 			if err != nil {
 				log.Println(err.Error())
