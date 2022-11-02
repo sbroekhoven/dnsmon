@@ -39,3 +39,7 @@ Here is an example configuration to use.
     ]
 }
 ```
+
+## Early example run
+
+![Early example](examples/earlyversion.png)
