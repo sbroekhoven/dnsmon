@@ -2,26 +2,18 @@ package main
 
 import (
 	"flag"
+	"log"
 	"os"
-	"reflect"
+	"time"
 
-	"dnsmon/checks"
 	"dnsmon/config"
 	"dnsmon/cruncher"
-
-	log "github.com/sirupsen/logrus"
 )
-
-func init() {
-	// Set some logging defaults
-	log.SetFormatter(&log.JSONFormatter{})
-	log.SetOutput(os.Stdout)
-	log.SetLevel(log.InfoLevel)
-}
 
 // This is the main function
 func main() {
-	log.Info("Start")
+	// Setup Logging
+	log.SetFlags(log.LstdFlags | log.Lshortfile)
 
 	// Define the flag for the application for opening a config file.
 	configFile := flag.String("config", "config.json", "What config file to use. (Required)")
@@ -30,87 +22,70 @@ func main() {
 		flag.PrintDefaults()
 		os.Exit(1)
 	}
-	log.Infof("Reading config file %v", *configFile)
 
 	// Read config or create an error
 	conf, err := config.LoadConfiguration(*configFile)
 	if err != nil {
-		log.Error(err.Error())
-		os.Exit(1)
+		log.Fatalln(err.Error())
 	}
 
 	// Check if there are more then 0 domains in the config file
 	if len(conf.Domains) < 1 {
-		println("No domains found in configfile")
-		log.Info("No domains in config file found")
+		log.Println("No domains found in configfile")
 		os.Exit(0)
 	}
 
 	// Loop domains from config file
 	for _, d := range conf.Domains {
-		// A common pattern is to re-use fields between logging statements by re-using
-		// the logrus.Entry returned from WithFields()
-		domainLogger := log.WithFields(log.Fields{
-			"domain": d.Name,
-		})
+		firstRun := false
+		var eq bool = false
+
+		// Define filenames
+		filenameLast := conf.Output + d.Name + ".current.json"
+		filenameArch := conf.Output + d.Name + "." + time.Now().Format("20060102150405") + ".json"
 
 		// Open stored domain data from json file
-		domainLogger.Info("Open last stored JSON file")
-		storedData, err := cruncher.ReadJSON(d.Name + ".last.json")
+		storedData, err := cruncher.ReadJSON(filenameLast)
 		if err != nil {
-			domainLogger.Error(err.Error())
+			// Probably first run and files do not exist
+			log.Println(err.Error())
+			firstRun = true
 		}
 
-		data := new(cruncher.Domain)
-		data.Domainname = d.Name
-
-		// Get the serial number of the zone file
-		domainLogger.Info("Get serial")
-		domainSerial, err := checks.GetSerial(d.Name, conf.Nameserver)
+		data, err := cruncher.Collect(d, conf.Resolver1)
 		if err != nil {
-			domainLogger.Error(err.Error())
+			// Error collecting information regarding this domain
+			// Contintue with the next domain
+			log.Println(err.Error())
+			data, err = cruncher.Collect(d, conf.Resolver1)
+			if err != nil {
+				log.Println(err.Error())
+				continue
+			}
 		}
-		data.Serial = domainSerial
+		var collectedData cruncher.Domain = *data
 
-		// Get the nameservers for the domains
-		domainLogger.Info("Get nameservers")
-		domainNameservers, err := checks.GetNameservers(d.Name, conf.Nameserver)
+		// Store new current information
+		written, err := cruncher.WriteJSON(filenameLast, collectedData)
 		if err != nil {
-			domainLogger.Error(err.Error())
+			log.Fatalln(err.Error())
 		}
-		data.Nameservers = domainNameservers
+		log.Printf("file written: %s with %d bytes", filenameLast, written)
 
-		// Get the mailservers for the domain
-		domainLogger.Info("Get mailservers")
-		domainMailservers, err := checks.GetMailservers(d.Name, conf.Nameserver)
+		// Also store a file for archiving on date
+		writtenArch, err := cruncher.WriteJSON(filenameArch, collectedData)
 		if err != nil {
-			domainLogger.Error(err.Error())
+			log.Fatalln(err.Error())
 		}
-		data.Mailservers = domainMailservers
+		log.Printf("file written: %s with %d bytes", filenameArch, writtenArch)
 
-		// Store the json to file
-		// prepare filename
-		domainLogger.Info("Write JSON file")
-		filename := data.Domainname + ".last.json"
-		written, err := cruncher.WriteJSON(filename, *data)
-		if err != nil {
-			domainLogger.Error(err.Error())
+		if !firstRun {
+			// Own compare functionallity
+			eq, err = cruncher.Compare(storedData, collectedData)
+			if err != nil {
+				log.Println(err.Error())
+			}
+			log.Println(eq)
 		}
-		domainLogger.Infof("Written %d bytes", written)
-
-		// compare the stuff
-		var resolvedData cruncher.Domain = *data
-		if reflect.DeepEqual(storedData, resolvedData) {
-			domainLogger.Info("storedData is equal to resolvedData")
-		} else {
-			domainLogger.Info("storedData is not equal to resolvedData")
-		}
-
-		// Own compare functionallity
-		eq, err := cruncher.Compare(storedData, resolvedData)
-		if err != nil {
-			domainLogger.Error(err.Error())
-		}
-		log.Println(eq)
 	}
 }

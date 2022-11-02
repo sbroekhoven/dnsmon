@@ -20,9 +20,11 @@ func LoadConfiguration(file string) (Config, error) {
 
 // Config struct for use in the applications with some general values
 type Config struct {
-	Contact    string         `json:"contact"`
-	Nameserver string         `json:"nameserver"`
-	Domains    []ConfigDomain `json:"domains"`
+	Contact   string         `json:"contact"`
+	Resolver1 string         `json:"resolver1"`
+	Resolver2 string         `json:"resolver2"`
+	Domains   []ConfigDomain `json:"domains"`
+	Output    string         `json:"output"`
 }
 
 // ConfigDomain struct for domains to monitor.

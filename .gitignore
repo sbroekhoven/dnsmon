@@ -17,3 +17,4 @@
 # configs that can contain "secrets"
 config.json
 *.json
+output/*.json
