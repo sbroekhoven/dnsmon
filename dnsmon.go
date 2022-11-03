@@ -82,7 +82,7 @@ func main() {
 
 		if !firstRun {
 			// Own compare functionallity
-			eq, err = cruncher.Compare(storedData, collectedData)
+			eq, err = cruncher.Compare(conf.Alerting, storedData, collectedData)
 			if err != nil {
 				log.Println(err.Error())
 			}

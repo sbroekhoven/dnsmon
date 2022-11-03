@@ -34,6 +34,7 @@ type Config struct {
 	Contact   string         `yaml:"contact,omitempty"`
 	Resolver1 string         `yaml:"resolver1,omitempty"`
 	Resolver2 string         `yaml:"resolver2,omitempty"`
+	Alerting  ConfigAlerting `yaml:"alerting,omitempty"`
 	Domains   []ConfigDomain `yaml:"domains,omitempty"`
 	Output    string         `yaml:"output,omitempty"`
 }
@@ -41,4 +42,10 @@ type Config struct {
 // ConfigDomain struct for domains to monitor.
 type ConfigDomain struct {
 	Name string `yaml:"name,omitempty"`
+}
+
+// ConfigAlerting struct for domains to monitor.
+type ConfigAlerting struct {
+	DiscordUsername   string `yaml:"discord_username,omitempty"`
+	DiscordWebhookURL string `yaml:"discord_webhook_url,omitempty"`
 }

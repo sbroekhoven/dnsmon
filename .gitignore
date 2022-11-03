@@ -16,6 +16,6 @@
 
 # configs that can contain "secrets"
 config.json
-cobfig.yaml
+config.yaml
 *.json
 output/*.json
