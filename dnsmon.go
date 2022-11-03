@@ -10,9 +10,9 @@ import (
 	"dnsmon/cruncher"
 )
 
-// This is the main function
+// This is the main function of dnsmon
 func main() {
-	// Setup Logging
+	// Setup some logging defaults
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 
 	// Define the flag for the application for opening a config file.
@@ -23,7 +23,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	// Read config or create an error
+	// Read config or create an error and quit.
 	conf, err := config.LoadConfiguration(*configFile)
 	if err != nil {
 		log.Fatalln(err.Error())
@@ -37,56 +37,67 @@ func main() {
 
 	// Loop domains from config file
 	for _, d := range conf.Domains {
+		// Set some vars.
+		// firstRun: is for checking if thare are any previous output files. Otherwise there is nothong to compare.
+		// eq: is to check if old and new information is the same
 		firstRun := false
 		var eq bool = false
 
-		// Define filenames
+		// Define filenames for reading and storing.
 		filenameLast := conf.Output + d.Name + ".current.json"
 		filenameArch := conf.Output + d.Name + "." + time.Now().Format("20060102150405") + ".json"
 
 		// Open stored domain data from json file
 		storedData, err := cruncher.ReadJSON(filenameLast)
 		if err != nil {
-			// Probably first run and files do not exist
+			// Probably first run and files do not exist, so set firstRun to true
 			log.Println(err.Error())
 			firstRun = true
 		}
 
+		// This function collects the information for the DNS.
 		data, err := cruncher.Collect(d, conf.Resolver1)
 		if err != nil {
-			// Error collecting information regarding this domain
-			// Contintue with the next domain
+			// If there is an error, print it and start using the second resolver to doublecheck.
 			log.Println(err.Error())
 			log.Println("start trying second resolver now")
-			data, err = cruncher.Collect(d, conf.Resolver1)
+			data, err = cruncher.Collect(d, conf.Resolver2)
 			if err != nil {
+				// If there is still an error in looking this up, skip the rest and continue with next domain.
 				log.Println(err.Error())
 				continue
 			}
 		}
+
+		// create this link to pointed data
 		var collectedData cruncher.Domain = *data
 
-		// Store new current information
-		written, err := cruncher.WriteJSON(filenameLast, collectedData)
-		if err != nil {
-			log.Fatalln(err.Error())
+		// If this is a firstRun, store new current information in output file and then continue
+		if firstRun {
+			written, err := cruncher.WriteJSON(filenameLast, collectedData)
+			if err != nil {
+				log.Fatalln(err.Error())
+			}
+			log.Printf("file written: %s with %d bytes", filenameLast, written)
+			log.Println("first run for this domain, continue to next domain")
+			continue
 		}
-		log.Printf("file written: %s with %d bytes", filenameLast, written)
 
-		// Also store a file for archiving on date
-		writtenArch, err := cruncher.WriteJSON(filenameArch, collectedData)
-		if err != nil {
-			log.Fatalln(err.Error())
-		}
-		log.Printf("file written: %s with %d bytes", filenameArch, writtenArch)
-
+		// if this is not a firstRun, compare the old and new information
 		if !firstRun {
-			// Own compare functionallity
 			eq, err = cruncher.Compare(conf.Alerting, storedData, collectedData)
 			if err != nil {
 				log.Println(err.Error())
 			}
-			log.Println(eq)
+			// log.Println(eq)
+			// If not equal, store the changes in a json file
+			if !eq {
+				writtenArch, err := cruncher.WriteJSON(filenameArch, collectedData)
+				if err != nil {
+					log.Fatalln(err.Error())
+				}
+				log.Printf("file written: %s with %d bytes", filenameArch, writtenArch)
+			}
 		}
 	}
 }
