@@ -6,7 +6,7 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-// Load configuration file and parse the json content
+// Load configuration file and parse the YAML content
 func LoadConfiguration(configPath string) (*Config, error) {
 	// Create config structure
 	config := &Config{}
@@ -44,7 +44,7 @@ type ConfigDomain struct {
 	Name string `yaml:"name,omitempty"`
 }
 
-// ConfigAlerting struct for domains to monitor.
+// ConfigAlerting struct for alerting purpose.
 type ConfigAlerting struct {
 	DiscordUsername   string `yaml:"discord_username,omitempty"`
 	DiscordWebhookURL string `yaml:"discord_webhook_url,omitempty"`

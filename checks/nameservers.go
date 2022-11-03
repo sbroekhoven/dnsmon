@@ -7,6 +7,7 @@ import (
 	"github.com/miekg/dns"
 )
 
+// GetNameservers function to get NS records from DNS
 func GetNameservers(domain string, nameserver string) ([]string, error) {
 	var answer []string
 	m := new(dns.Msg)

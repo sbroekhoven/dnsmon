@@ -2,7 +2,7 @@ package checks
 
 import "github.com/miekg/dns"
 
-// getSerial function to resolve SOA record from domain
+// GetSerial function to resolve SOA record from domain and return only the serial for now
 func GetSerial(domain string, nameserver string) (uint32, error) {
 	var answer uint32
 	m := new(dns.Msg)

@@ -8,10 +8,7 @@ import (
 	"net/http"
 )
 
-// values := map[string]string{"username": username, "password": password}
-// jsonValue, _ := json.Marshal(values)
-// resp, err := http.Post(authAuthenticatorUrl, "application/json", bytes.NewBuffer(jsonValue))
-
+// Discord function to send out alerts to a Discord channel webhook
 func Discord(url string, username string, content string) error {
 	payload := new(DiscordMessage)
 	payload.Username = username

@@ -6,6 +6,7 @@ import (
 	"github.com/miekg/dns"
 )
 
+// GetMailserver function to get MX records from DNS
 func GetMailservers(domain string, nameserver string) ([]string, error) {
 	var answer []string
 	m := new(dns.Msg)
