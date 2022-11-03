@@ -92,11 +92,19 @@ func main() {
 			// log.Println(eq)
 			// If not equal, store the changes in a json file
 			if !eq {
-				writtenArch, err := cruncher.WriteJSON(filenameArch, collectedData)
+				// Write archive with stored JSON data
+				writtenArch, err := cruncher.WriteJSON(filenameArch, storedData)
 				if err != nil {
 					log.Fatalln(err.Error())
 				}
 				log.Printf("file written: %s with %d bytes", filenameArch, writtenArch)
+
+				// Write new current JSON file with new collected data
+				written, err := cruncher.WriteJSON(filenameLast, collectedData)
+				if err != nil {
+					log.Fatalln(err.Error())
+				}
+				log.Printf("file written: %s with %d bytes", filenameLast, written)
 			}
 		}
 	}
