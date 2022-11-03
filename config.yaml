@@ -1,0 +1,9 @@
+---
+contact: SuspiciousBytes
+output: output/
+resolver1: 8.8.8.8
+resolver2: 1.1.1.1
+domains:
+- name: suspiciousbytes.com
+- name: binaryfigments.com
+- name: evolvesec.nl

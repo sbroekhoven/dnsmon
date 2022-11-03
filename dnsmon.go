@@ -16,7 +16,7 @@ func main() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 
 	// Define the flag for the application for opening a config file.
-	configFile := flag.String("config", "config.json", "What config file to use. (Required)")
+	configFile := flag.String("config", "config.yaml", "What config file to use. (Required)")
 	flag.Parse()
 	if *configFile == "" {
 		flag.PrintDefaults()

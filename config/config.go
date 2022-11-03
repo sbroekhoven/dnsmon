@@ -1,33 +1,44 @@
 package config
 
 import (
-	"encoding/json"
 	"os"
+
+	"gopkg.in/yaml.v3"
 )
 
 // Load configuration file and parse the json content
-func LoadConfiguration(file string) (Config, error) {
-	var config Config
-	configFile, err := os.Open(file)
+func LoadConfiguration(configPath string) (*Config, error) {
+	// Create config structure
+	config := &Config{}
+
+	// Open config file
+	file, err := os.Open(configPath)
 	if err != nil {
-		return config, err
+		return nil, err
 	}
-	defer configFile.Close()
-	jsonParser := json.NewDecoder(configFile)
-	jsonParser.Decode(&config)
-	return config, err
+	defer file.Close()
+
+	// Init new YAML decode
+	d := yaml.NewDecoder(file)
+
+	// Start YAML decoding from file
+	if err := d.Decode(&config); err != nil {
+		return nil, err
+	}
+
+	return config, nil
 }
 
 // Config struct for use in the applications with some general values
 type Config struct {
-	Contact   string         `json:"contact"`
-	Resolver1 string         `json:"resolver1"`
-	Resolver2 string         `json:"resolver2"`
-	Domains   []ConfigDomain `json:"domains"`
-	Output    string         `json:"output"`
+	Contact   string         `yaml:"contact,omitempty"`
+	Resolver1 string         `yaml:"resolver1,omitempty"`
+	Resolver2 string         `yaml:"resolver2,omitempty"`
+	Domains   []ConfigDomain `yaml:"domains,omitempty"`
+	Output    string         `yaml:"output,omitempty"`
 }
 
 // ConfigDomain struct for domains to monitor.
 type ConfigDomain struct {
-	Name string `json:"name"`
+	Name string `yaml:"name,omitempty"`
 }

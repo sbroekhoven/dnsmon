@@ -13,31 +13,23 @@ To start with, I only want to look for changes in:
 Issue the following command to run this tool.
 
 ```bash
-dnsmon -config config.json
+dnsmon -config config.yaml
 ```
 
 ## The configuration
 
 Here is an example configuration to use.
 
-```json
-{
-    "contact": "somebody",
-    "output": "output/",
-    "resolver1": "8.8.8.8",
-    "resolver2": "1.1.1.1",
-    "domains": [
-        {
-            "name": "example.com"
-        },
-        {
-            "name": "voorbeeld.nl"
-        },
-        {
-            "name": "example.xyz"
-        }
-    ]
-}
+```yaml
+---
+contact: Somebody 
+output: output/
+resolver1: 8.8.8.8
+resolver2: 1.1.1.1
+domains:
+- name: domainx.com
+- name: domainy.com
+- name: domainz.nl
 ```
 
 ## Early example run
