@@ -22,7 +22,7 @@ func Collect(domain config.ConfigDomain, nameserver string) (*Domain, error) {
 	if err != nil {
 		return data, err
 	}
-	if len(domainNameservers) > 0 {
+	if len(domainNameservers) != 0 {
 		data.Nameservers = domainNameservers
 	}
 
@@ -31,7 +31,7 @@ func Collect(domain config.ConfigDomain, nameserver string) (*Domain, error) {
 	if err != nil {
 		return data, err
 	}
-	if len(domainMailservers) > 0 {
+	if len(domainMailservers) != 0 {
 		data.Mailservers = domainMailservers
 	}
 
