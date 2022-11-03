@@ -17,5 +17,6 @@
 # configs that can contain "secrets"
 config.json
 config.yaml
+config.*
 *.json
 output/*.json
