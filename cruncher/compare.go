@@ -7,7 +7,7 @@ import (
 	"log"
 )
 
-func Compare(alert config.ConfigAlerting, old Domain, new Domain) (bool, error) {
+func Compare(alert config.Alerting, old Domain, new Domain) (bool, error) {
 	eq := true
 
 	// Compare domain zone serial

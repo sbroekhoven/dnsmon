@@ -5,7 +5,7 @@ import (
 	"dnsmon/config"
 )
 
-func Collect(domain config.ConfigDomain, nameserver string) (*Domain, error) {
+func Collect(domain config.Domain, nameserver string) (*Domain, error) {
 	// Collect domain information
 	data := new(Domain)
 	data.Domainname = domain.Name

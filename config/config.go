@@ -31,21 +31,28 @@ func LoadConfiguration(configPath string) (*Config, error) {
 
 // Config struct for use in the applications with some general values
 type Config struct {
-	Contact   string         `yaml:"contact,omitempty"`
-	Resolver1 string         `yaml:"resolver1,omitempty"`
-	Resolver2 string         `yaml:"resolver2,omitempty"`
-	Alerting  ConfigAlerting `yaml:"alerting,omitempty"`
-	Domains   []ConfigDomain `yaml:"domains,omitempty"`
-	Output    string         `yaml:"output,omitempty"`
+	Contact   string   `yaml:"contact,omitempty"`
+	Resolver1 string   `yaml:"resolver1,omitempty"`
+	Resolver2 string   `yaml:"resolver2,omitempty"`
+	Alerting  Alerting `yaml:"alerting,omitempty"`
+	Domains   []Domain `yaml:"domains,omitempty"`
+	Output    string   `yaml:"output,omitempty"`
 }
 
-// ConfigDomain struct for domains to monitor.
-type ConfigDomain struct {
+// Domain struct for domains to monitor.
+type Domain struct {
+	Name    string   `yaml:"name,omitempty"`
+	Records []Record `yaml:"records,omitempty"`
+}
+
+// Record struct for DNS records under a domain.
+type Record struct {
 	Name string `yaml:"name,omitempty"`
+	Type string `yaml:"type,omitempty"`
 }
 
-// ConfigAlerting struct for alerting purpose.
-type ConfigAlerting struct {
+// Alerting struct for alerting purpose.
+type Alerting struct {
 	DiscordUsername   string `yaml:"discord_username,omitempty"`
 	DiscordWebhookURL string `yaml:"discord_webhook_url,omitempty"`
 }
