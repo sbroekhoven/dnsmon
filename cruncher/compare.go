@@ -5,6 +5,7 @@ import (
 	"dnsmon/config"
 	"fmt"
 	"log"
+	"reflect"
 )
 
 func Compare(alert config.Alerting, old Domain, new Domain) (bool, error) {
@@ -40,6 +41,21 @@ func Compare(alert config.Alerting, old Domain, new Domain) (bool, error) {
 		err := alerting.Discord(alert.DiscordWebhookURL, alert.DiscordUsername, message)
 		if err != nil {
 			log.Println(err.Error())
+		}
+	}
+
+	// Compare records
+	// TODO: Needs some work
+	if (len(old.Records) > 0) || (len(new.Records) > 0) {
+		ref := reflect.DeepEqual(old.Records, new.Records)
+		if !ref {
+			eq = false
+			message := fmt.Sprintf("Some records of domain %s are changed.", new.Domainname)
+			log.Println(message)
+			err := alerting.Discord(alert.DiscordWebhookURL, alert.DiscordUsername, message)
+			if err != nil {
+				log.Println(err.Error())
+			}
 		}
 	}
 

@@ -42,13 +42,7 @@ type Config struct {
 // Domain struct for domains to monitor.
 type Domain struct {
 	Name    string   `yaml:"name,omitempty"`
-	Records []Record `yaml:"records,omitempty"`
-}
-
-// Record struct for DNS records under a domain.
-type Record struct {
-	Name string `yaml:"name,omitempty"`
-	Type string `yaml:"type,omitempty"`
+	Records []string `yaml:"records,omitempty"`
 }
 
 // Alerting struct for alerting purpose.
