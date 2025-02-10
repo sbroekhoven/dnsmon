@@ -31,18 +31,12 @@ func LoadConfiguration(configPath string) (*Config, error) {
 
 // Config struct for use in the applications with some general values
 type Config struct {
-	Contact   string   `yaml:"contact,omitempty"`
-	Resolver1 string   `yaml:"resolver1,omitempty"`
-	Resolver2 string   `yaml:"resolver2,omitempty"`
-	Alerting  Alerting `yaml:"alerting,omitempty"`
-	Domains   []Domain `yaml:"domains,omitempty"`
-	Output    string   `yaml:"output,omitempty"`
-}
-
-// Domain struct for domains to monitor.
-type Domain struct {
-	Name    string   `yaml:"name,omitempty"`
-	Records []string `yaml:"records,omitempty"`
+	Contact     string   `yaml:"contact,omitempty"`
+	Resolver1   string   `yaml:"resolver1,omitempty"`
+	Resolver2   string   `yaml:"resolver2,omitempty"`
+	Alerting    Alerting `yaml:"alerting,omitempty"`
+	DomainsFile string   `yaml:"domains_file,omitempty"`
+	Output      string   `yaml:"output,omitempty"`
 }
 
 // Alerting struct for alerting purpose.

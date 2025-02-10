@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"flag"
 	"log"
 	"os"
@@ -29,14 +30,35 @@ func main() {
 		log.Fatalln(err.Error())
 	}
 
-	// Check if there are more then 0 domains in the config file
-	if len(conf.Domains) < 1 {
-		log.Println("No domains found in configfile")
-		os.Exit(0)
+	// Check if domains_file exists
+	if conf.DomainsFile != "" {
+		_, err := os.Stat(conf.DomainsFile)
+		if os.IsNotExist(err) {
+			log.Fatalf("Error: The domains file '%s' specified in config does not exist.\n", conf.DomainsFile)
+		} else if err != nil {
+			log.Fatalf("Error checking domains file: %v\n", err)
+		}
+	} else {
+		log.Fatalln("Error: No domains file specified in config.")
 	}
 
-	// Loop domains from config file
-	for _, d := range conf.Domains {
+	// Open the domains file
+	file, err := os.Open(conf.DomainsFile)
+	log.Printf("Processing domains file: %s\n", conf.DomainsFile)
+
+	if err != nil {
+		log.Fatalf("Error opening domains file: %v\n", err)
+	}
+	defer file.Close()
+
+	// Read file line by line
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		domain := scanner.Text()
+		// Process each domain
+		log.Printf("Processing domain: %s\n", domain)
+		// Add your domain processing logic here, e.g., querying RDAP
+
 		// Set some vars.
 		// firstRun: is for checking if thare are any previous output files. Otherwise there is nothong to compare.
 		// eq: is to check if old and new information is the same
@@ -44,8 +66,8 @@ func main() {
 		var eq bool = false
 
 		// Define filenames for reading and storing.
-		filenameLast := conf.Output + d.Name + ".current.json"
-		filenameArch := conf.Output + d.Name + "." + time.Now().Format("20060102150405") + ".json"
+		filenameLast := conf.Output + domain + ".current.json"
+		filenameArch := conf.Output + domain + "." + time.Now().Format("20060102150405") + ".json"
 
 		// Open stored domain data from json file
 		storedData, err := cruncher.ReadJSON(filenameLast)
@@ -56,12 +78,12 @@ func main() {
 		}
 
 		// This function collects the information for the DNS.
-		data, err := cruncher.Collect(d, conf.Resolver1)
+		data, err := cruncher.Collect(domain, conf.Resolver1)
 		if err != nil {
 			// If there is an error, print it and start using the second resolver to doublecheck.
 			log.Println(err.Error())
-			log.Println("start trying second resolver now")
-			data, err = cruncher.Collect(d, conf.Resolver2)
+			// log.Println("start trying second resolver now")
+			// data, err := cruncher.Collect(domain, conf.Resolver2)
 			if err != nil {
 				// If there is still an error in looking this up, skip the rest and continue with next domain.
 				log.Println(err.Error())
@@ -106,5 +128,9 @@ func main() {
 				log.Printf("file written: %s with %d bytes", filenameLast, written)
 			}
 		}
+	}
+
+	if err := scanner.Err(); err != nil {
+		log.Fatalf("Error reading domains file: %v\n", err)
 	}
 }

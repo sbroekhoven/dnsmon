@@ -6,6 +6,8 @@ type Domain struct {
 	Serial      uint32   `json:"serial,omitempty"`
 	Nameservers []string `json:"nameservers,omitempty"`
 	Mailservers []string `json:"mailservers,omitempty"`
+	SPFRecord   string   `json:"spf_record,omitempty"`
+	DMARCRecord string   `json:"dmarc_record,omitempty"`
 	Records     []Record `json:"records,omitempty"`
 }
 

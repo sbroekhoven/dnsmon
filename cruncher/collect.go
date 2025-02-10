@@ -2,24 +2,22 @@ package cruncher
 
 import (
 	"dnsmon/checks"
-	"dnsmon/config"
-	"log"
 )
 
-func Collect(domain config.Domain, nameserver string) (*Domain, error) {
+func Collect(domain string, nameserver string) (*Domain, error) {
 	// Collect domain information
 	data := new(Domain)
-	data.Domainname = domain.Name
+	data.Domainname = domain
 
 	// Get the serial number of the zone file
-	domainSerial, err := checks.GetSerial(domain.Name, nameserver)
+	domainSerial, err := checks.GetSerial(domain, nameserver)
 	if err != nil {
 		return data, err
 	}
 	data.Serial = domainSerial
 
 	// Get the nameservers for the domains
-	domainNameservers, err := checks.GetNameservers(domain.Name, nameserver)
+	domainNameservers, err := checks.GetNameservers(domain, nameserver)
 	if err != nil {
 		return data, err
 	}
@@ -28,7 +26,7 @@ func Collect(domain config.Domain, nameserver string) (*Domain, error) {
 	}
 
 	// Get the mailservers for the domain
-	domainMailservers, err := checks.GetMailservers(domain.Name, nameserver)
+	domainMailservers, err := checks.GetMailservers(domain, nameserver)
 	if err != nil {
 		return data, err
 	}
@@ -36,15 +34,19 @@ func Collect(domain config.Domain, nameserver string) (*Domain, error) {
 		data.Mailservers = domainMailservers
 	}
 
-	for _, r := range domain.Records {
-		log.Println(r)
-		record, err := GetRecord(r, nameserver)
-		data.Records = append(data.Records, *record)
-		if err != nil {
-			// return data, err
-			log.Println(err.Error())
-		}
+	// Get SPF record for the domain
+	spfRecord, err := checks.GetSPFRecord(domain, nameserver)
+	if err != nil {
+		return data, err
 	}
+	data.SPFRecord = spfRecord
+
+	// Get DMARC record for the domain
+	dmarcRecord, err := checks.GetDMARCRecord(domain, nameserver)
+	if err != nil {
+		return data, err
+	}
+	data.DMARCRecord = dmarcRecord
 
 	return data, nil
 }
