@@ -41,6 +41,9 @@ type Config struct {
 
 // Alerting struct for alerting purpose.
 type Alerting struct {
-	DiscordUsername   string `yaml:"discord_username,omitempty"`
-	DiscordWebhookURL string `yaml:"discord_webhook_url,omitempty"`
+	Enabled           []string `yaml:"enabled,omitempty"`
+	DiscordUsername   string   `yaml:"discord_username,omitempty"`
+	DiscordWebhookURL string   `yaml:"discord_webhook_url,omitempty"`
+	WebexRoom         string   `yaml:"webex_room,omitempty"`
+	WebexToken        string   `yaml:"webex_token,omitempty"`
 }

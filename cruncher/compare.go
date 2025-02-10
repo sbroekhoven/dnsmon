@@ -15,10 +15,7 @@ func Compare(alert config.Alerting, old Domain, new Domain) (bool, error) {
 	if new.Serial == 0 {
 		message := fmt.Sprintf("⚠️ The serial in SOA record of domain %s is not found.", new.Domainname)
 		log.Println(message)
-		err := alerting.Discord(alert.DiscordWebhookURL, alert.DiscordUsername, message)
-		if err != nil {
-			log.Println(err.Error())
-		}
+		alerting.SendAlerts(alert, message)
 	}
 
 	// Compare domain zone serial
@@ -26,10 +23,7 @@ func Compare(alert config.Alerting, old Domain, new Domain) (bool, error) {
 		eq = false
 		message := fmt.Sprintf("⚠️ The serial in SOA record of domain %s is changed.", new.Domainname)
 		log.Println(message)
-		err := alerting.Discord(alert.DiscordWebhookURL, alert.DiscordUsername, message)
-		if err != nil {
-			log.Println(err.Error())
-		}
+		alerting.SendAlerts(alert, message)
 	}
 
 	// Compare nameservers
@@ -37,10 +31,7 @@ func Compare(alert config.Alerting, old Domain, new Domain) (bool, error) {
 		eq = false
 		message := fmt.Sprintf("⚠️ The nameservers of domain %s are changed.", new.Domainname)
 		log.Println(message)
-		err := alerting.Discord(alert.DiscordWebhookURL, alert.DiscordUsername, message)
-		if err != nil {
-			log.Println(err.Error())
-		}
+		alerting.SendAlerts(alert, message)
 	}
 
 	// Compare mailservers
@@ -48,10 +39,7 @@ func Compare(alert config.Alerting, old Domain, new Domain) (bool, error) {
 		eq = false
 		message := fmt.Sprintf("⚠️ The MX records of domain %s are changed.", new.Domainname)
 		log.Println(message)
-		err := alerting.Discord(alert.DiscordWebhookURL, alert.DiscordUsername, message)
-		if err != nil {
-			log.Println(err.Error())
-		}
+		alerting.SendAlerts(alert, message)
 	}
 
 	// Compare SPF
@@ -59,10 +47,7 @@ func Compare(alert config.Alerting, old Domain, new Domain) (bool, error) {
 		eq = false
 		message := fmt.Sprintf("⚠️ The SPF record of domain %s is changed.", new.Domainname)
 		log.Println(message)
-		err := alerting.Discord(alert.DiscordWebhookURL, alert.DiscordUsername, message)
-		if err != nil {
-			log.Println(err.Error())
-		}
+		alerting.SendAlerts(alert, message)
 	}
 
 	// Compare SPF
@@ -70,10 +55,7 @@ func Compare(alert config.Alerting, old Domain, new Domain) (bool, error) {
 		eq = false
 		message := fmt.Sprintf("⚠️ The DMARC record of domain %s is changed.", new.Domainname)
 		log.Println(message)
-		err := alerting.Discord(alert.DiscordWebhookURL, alert.DiscordUsername, message)
-		if err != nil {
-			log.Println(err.Error())
-		}
+		alerting.SendAlerts(alert, message)
 	}
 
 	// Compare records
@@ -84,14 +66,12 @@ func Compare(alert config.Alerting, old Domain, new Domain) (bool, error) {
 			eq = false
 			message := fmt.Sprintf("⚠️ Some records of domain %s are changed.", new.Domainname)
 			log.Println(message)
-			err := alerting.Discord(alert.DiscordWebhookURL, alert.DiscordUsername, message)
-			if err != nil {
-				log.Println(err.Error())
-			}
+			alerting.SendAlerts(alert, message)
 		}
 	}
+	// message := fmt.Sprintf("⚠️ Testing domain %s .", new.Domainname)
+	// alerting.SendAlerts(alert, message)
 
-	// done
 	return eq, nil
 }
 
