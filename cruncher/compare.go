@@ -13,7 +13,7 @@ func Compare(alert config.Alerting, old Domain, new Domain) (bool, error) {
 
 	// Check if new.Serial is set (assuming 0 is not a valid serial number)
 	if new.Serial == 0 {
-		message := fmt.Sprintf("⚠️ The serial in SOA record of domain %s is not found.", new.Domainname)
+		message := fmt.Sprintf("⚠️ The serial in SOA record of domain **%s** is not found.", new.Domainname)
 		log.Println(message)
 		alerting.SendAlerts(alert, message)
 	}
