@@ -18,5 +18,6 @@
 config.json
 config.yaml
 config.*
+domains.txt
 *.json
 output/*.json
