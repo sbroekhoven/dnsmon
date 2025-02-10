@@ -21,3 +21,5 @@ config.*
 domains.txt
 *.json
 output/*.json
+
+testing/
