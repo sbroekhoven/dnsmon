@@ -32,7 +32,8 @@ func Discord(url string, username string, content string) error {
 			return err
 		}
 
-		return fmt.Errorf(string(responseBody))
+		return fmt.Errorf("error response from discord: %s", string(responseBody))
+
 	}
 
 	return nil
