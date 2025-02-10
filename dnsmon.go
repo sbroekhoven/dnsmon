@@ -81,12 +81,21 @@ func main() {
 		data, err := cruncher.Collect(domain, conf.Resolver1)
 		if err != nil {
 			// If there is an error, print it and start using the second resolver to doublecheck.
-			log.Println(err.Error())
-			// log.Println("start trying second resolver now")
-			// data, err := cruncher.Collect(domain, conf.Resolver2)
-			if err != nil {
-				// If there is still an error in looking this up, skip the rest and continue with next domain.
-				log.Println(err.Error())
+			log.Printf("Error with primary resolver: %v. Trying secondary resolver.", err)
+
+			// Check if a secondary resolver is configured
+			if conf.Resolver2 != "" {
+				log.Println("Trying secondary resolver.")
+				// Try again with the second resolver
+				data, err = cruncher.Collect(domain, conf.Resolver2)
+				if err != nil {
+					// If there's still an error with the second resolver, log it and skip this domain
+					log.Printf("Error with secondary resolver for domain %s: %v. Skipping this domain.", domain, err)
+					continue
+				}
+			} else {
+				// If no secondary resolver is configured, log it and skip this domain
+				log.Printf("No secondary resolver configured. Skipping domain %s.", domain)
 				continue
 			}
 		}
