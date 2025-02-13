@@ -8,6 +8,13 @@ import (
 	"net/http"
 )
 
+// Webex sends a message to a Webex room using the Webex API.
+//
+// This function returns an error if the Webex token or room ID is missing in the
+// configuration, or if there is an error sending the request or reading the
+// response.
+//
+// The content is sent as a markdown field in a multipart message.
 func Webex(webexRoomID string, webexToken string, content string) error {
 
 	// Create an HTTP client with or without proxy

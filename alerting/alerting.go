@@ -6,6 +6,15 @@ import (
 	"strings"
 )
 
+// SendAlerts sends an alert to all enabled alerting methods specified in the config.
+// It is the caller's responsibility to make sure that the alerting method is enabled
+// in the configuration before calling this function.
+//
+// If the configuration is missing the required information for a particular
+// alerting method (e.g. a webhook URL or username), the function will log an
+// error but will not return an error.
+//
+// The message is sent as-is to each alerting method, without any modification.
 func SendAlerts(alert config.Alerting, message string) {
 	for _, enabled := range alert.Enabled {
 		switch strings.ToLower(enabled) {

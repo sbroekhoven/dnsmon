@@ -8,7 +8,11 @@ import (
 	"net/http"
 )
 
-// Discord function to send out alerts to a Discord channel webhook
+// Discord sends a message to a Discord webhook URL using the Discord API.
+//
+// This function returns an error if there is an error sending the request or
+// reading the response. If the response status code is not 200 or 204, the
+// response body is read and returned as an error.
 func Discord(url string, username string, content string) error {
 	payload := new(DiscordMessage)
 	payload.Username = username
