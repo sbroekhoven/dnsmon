@@ -55,11 +55,6 @@ func main() {
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
 		domain := scanner.Text()
-		// Process each domain
-		log.Printf("Processing domain: %s\n", domain)
-		// Add your domain processing logic here, e.g., querying RDAP
-
-		// Set some vars.
 		// firstRun: is for checking if thare are any previous output files. Otherwise there is nothong to compare.
 		// eq: is to check if old and new information is the same
 		firstRun := false
