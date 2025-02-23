@@ -7,6 +7,17 @@ import (
 )
 
 // Load configuration file and parse the YAML content
+// LoadConfiguration loads the configuration from the specified YAML file.
+// It takes the path to the configuration file as an argument and returns a pointer
+// to the Config struct and an error if any occurs during the process.
+//
+// The function performs the following steps:
+// 1. Creates an empty Config struct.
+// 2. Opens the specified configuration file.
+// 3. Initializes a new YAML decoder.
+// 4. Decodes the YAML content into the Config struct.
+//
+// If the file cannot be opened or the YAML content cannot be decoded, an error is returned.
 func LoadConfiguration(configPath string) (*Config, error) {
 	// Create config structure
 	config := &Config{}
